@@ -5,6 +5,7 @@
 .config
 .dbus
 .gconfig
+.gitconfig
 .gstreamer-0.10
 .local
 .mysql_history
