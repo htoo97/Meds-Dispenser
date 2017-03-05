@@ -1,15 +1,18 @@
-#!/bin/bash/
+#!/bin/bash
 
-if [ $# -ne 4 ]
+if [ $# -ne 5 ] 
 then
-  echo "cron.sh requires 4 arguments: drugID, minute, hour and day"
+  echo "cron.sh requires 4 arguments"
   exit 1
 fi
 
-# parse arguments
-DrugID=$1
-min=$2
-hour=$3
-day=$4
+drugID=$1
+pillsPerTime=$2
+minute=$3
+hour=$4
+day=$5
 
-
+crontab -l > mycron
+echo "$minute $hour \* \* $day ~/dispense_drug.sh $drugID $pillsPerTime" >> mycron
+crontab mycron
+rm mycron
