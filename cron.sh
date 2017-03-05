@@ -2,7 +2,7 @@
 
 if [ $# -ne 5 ] 
 then
-  echo "cron.sh requires 4 arguments"
+  echo "cron.sh requires 5 arguments"
   exit 1
 fi
 

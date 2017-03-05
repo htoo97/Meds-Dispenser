@@ -26,14 +26,18 @@ def sms():
     if len(reply_array) == 2 or len(reply_array) == 4 or len(reply_array) == 10:
         # parse drugName and its ID
         drugName = reply_array[1].lower()
-
         # format: delete drugName
         if reply_array[0] == "delete" and len(reply_array) == 2:
-            drugID = cur.execute("SELECT ISNULL((SELECT DrugID FROM DrugSchedule WHERE DrugName LIKE " + drugName + "), NULL)")
-            if drugID == null:
+            query = "SELECT IFNULL((SELECT DrugID FROM DrugSchedule WHERE DrugName LIKE '" + drugName + "'), '0');"
+            cur.execute(query)
+            result = cur.fetchone()
+            drugID = result[0]
+            if drugID == '0':
                 resp.message("Medicine name not found.")
                 return str("error")
-            cur.execute("DELETE FROM DrugSchedule WHERE DrugID = " + drugID)
+            query = "DELETE FROM DrugSchedule WHERE DrugID='" + str(drugID) + "';"
+            cur.execute(query)
+            db.commit()
             resp.message(drugName + ' deleted from database and scheduling.')
 
         # add new drug and schedule for every day
@@ -52,11 +56,16 @@ def sms():
                 for i in range (1, intDailyDose-1):
                     times[i] = times[i-1] + interval
                 cur.execute("INSERT INTO DrugSchedule(DrugID, DrugName, PillsPerTime, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday) VALUES ('0', '" + drugName + "', '" + str(pillsPerTime) + "', '" +str(dailyDose) + "', '"+str(dailyDose)+"', '"+str(dailyDose)+"', '"+str(dailyDose)+"', '"+str(dailyDose)+"', '"+str(dailyDose)+"', '"+str(dailyDose)+"')")
-                drugID = cur.execute("SELECT DrugID FROM DrugSchedule WHERE DrugName LIKE " + drugName)
-                for i in range (0,7):
-                    for j in range (0, len(times)):
-                        subprocess.call('./cron.sh ' + drugId + " " + pillsPerTime + " 0 " + times[j] + " " + i)
-                resp.message(drugName + ' added to database and scheduled.')
+                db.commit()
+                cur.execute("SELECT DrugID FROM DrugSchedule WHERE DrugName LIKE '" + drugName + "'")
+                result = cur.fetchone()
+                drugID = result[0]
+                #for i in range (0,7):
+                    #for j in range (0, len(times)):
+                        #cronString = "./cron.sh " + str(drugID) + " " + str(pillsPerTime) + " 0 " + str(times[j]) + " " + str(i)
+                        #subprocess.call(cronString)
+                query = drugName + ' added to database and scheduled.'
+                resp.message(query)
         else:
             resp.message('to come soon.')
     else:
